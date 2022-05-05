@@ -9,7 +9,8 @@ import { useCart } from '../../hooks/useCart';
 const Header = (): JSX.Element => {
 	const { cart } = useCart();
 	//const cartSize = // TODO
-	const cartSize = cart.reduce((acc, item) => (acc += acc), 0);
+	console.log('Qnt cart para o header: ', cart);
+	const cartSize = cart.length;
 
 	return (
 		<Container>
