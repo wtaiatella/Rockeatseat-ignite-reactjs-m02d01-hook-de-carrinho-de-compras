@@ -37,23 +37,22 @@ export function CartProvider({ children }: CartProviderProps): JSX.Element {
 		api.get('/stock').then((response) => setStock(response.data));
 	}, []); */
 
-	let stock: Stock[];
+	/* 	let stock: Stock[];
 	api.get('/stock/').then((response) => {
 		stock = response.data;
 	});
+ */
 
 	const addProduct = async (productId: number) => {
 		try {
 			// TODO
-			let newCart: Product[] = cart;
+			let newCart: Product[] = [...cart];
 
 			//faz leitura do stock do produto ID
-			const productStock = stock.reduce<number>((acc, item) => {
-				if (productId === item.id) {
-					acc = item.amount;
-				}
-				return acc;
-			}, 0);
+			const stock: Stock = await (await api.get('/stock/')).data;
+			const productStock: number = await (
+				await api.get('/stock/' + productId)
+			).data.amount;
 
 			console.log('qnt geral em estoque: ', stock);
 			console.log('qnt estoque do ID: ', productStock);
@@ -82,38 +81,25 @@ export function CartProvider({ children }: CartProviderProps): JSX.Element {
 					return item;
 				});
 				console.log('carrinho armazenado: ', newCart);
-				setCart(newCart);
-				localStorage.setItem(
-					'@RocketShoes:cart',
-					JSON.stringify(newCart)
-				);
 			} else {
 				console.log(
-					'carrinho antes de incluir novo produto: ' + newCart
+					'carrinho antes de incluir novo produto: ',
+					newCart
 				);
-				//busca dados do produto para adicionar no carrinho
-				let productInfo: Product;
+
 				//recebe os dados do produto
-				api.get('/products/' + productId)
-					.then((response) => {
-						if (response.data) {
-							productInfo = response.data;
-							productInfo.amount = 1;
-							//verifica se é um carrinho vazio
-							if (newCart) newCart = [...newCart, productInfo];
-							else newCart = [productInfo];
-							console.log('carrinho armazenado: ', newCart);
-							setCart(newCart);
-							localStorage.setItem(
-								'@RocketShoes:cart',
-								JSON.stringify(newCart)
-							);
-						} else {
-							throw new Error('Erro na adição do produto');
-						}
-					})
-					.then(() => console.log('carrinho armazenado: ', newCart));
+				const product = await api.get('/products/' + productId);
+
+				const newProduct = {
+					...product.data,
+					amount: 1,
+				};
+				newCart.push(newProduct);
+
+				console.log('carrinho armazenado: ', newCart);
 			}
+			setCart(newCart);
+			localStorage.setItem('@RocketShoes:cart', JSON.stringify(newCart));
 		} catch (err: unknown) {
 			//} catch {
 			// TODO
@@ -124,7 +110,7 @@ export function CartProvider({ children }: CartProviderProps): JSX.Element {
 	const removeProduct = (productId: number) => {
 		try {
 			// TODO
-			let newCart: Product[] = cart;
+			let newCart: Product[] = [...cart];
 
 			//verifica se o ID esta presente no carrinho
 			//SIM: remove
@@ -153,7 +139,7 @@ export function CartProvider({ children }: CartProviderProps): JSX.Element {
 	}: UpdateProductAmount) => {
 		try {
 			// TODO
-			let newCart: Product[] = cart;
+			let newCart: Product[] = [...cart];
 
 			console.log('cart antes do update =', cart);
 			console.log('ProductId para update =', productId);
@@ -165,12 +151,15 @@ export function CartProvider({ children }: CartProviderProps): JSX.Element {
 			}
 
 			//faz leitura do stock do produto ID
-			const productStock = stock.reduce<number>((acc, item) => {
+			const productStock: number = await (
+				await api.get('/stock/' + productId)
+			).data.amount;
+			/* 			const productStock = stock.reduce<number>((acc, item) => {
 				if (productId === item.id) {
 					acc = item.amount;
 				}
 				return acc;
-			}, 0);
+			}, 0); */
 
 			console.log('Quantidade em estoque do produto =', productStock);
 
